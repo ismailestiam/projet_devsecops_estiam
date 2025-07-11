@@ -13,11 +13,17 @@ git config --global user.email "votre.email@example.com"
 # Déjà exécuté
 git init
 
-# Ajouter tous les fichiers
+# Ajouter tous les fichiers (y compris la nouvelle app e-commerce)
 git add .
 
-# Premier commit
-git commit -m "Initial commit: Projet DevSecOps Docker avec 4 applications"
+# Commit avec l'ajout de l'application e-commerce
+git commit -m "Ajout application e-commerce Django (Rocket eCommerce)
+
+- Intégration de l'application Rocket eCommerce
+- Dockerfile optimisé pour Django avec Alpine Linux
+- Configuration Nginx mise à jour pour le routage
+- Docker Compose étendu pour 5 applications
+- Documentation mise à jour"
 ```
 
 ### 3. Créer un Repository sur GitHub
@@ -125,15 +131,28 @@ curl -X POST -H "Host: nodejs-app.local" http://localhost/api/users \
 #### Application PHP (Accès Direct - pour Pentests)
 ```bash
 # Test health check
-curl http://localhost:8000/api/health
+curl http://localhost:8001/api/health
 
 # Test endpoint de sécurité (spécial pentests)
-curl http://localhost:8000/api/security-test
+curl http://localhost:8001/api/security-test
 
 # Test API produits
-curl http://localhost:8000/api/products
+curl http://localhost:8001/api/products
 
-# Ou ouvrir dans le navigateur : http://localhost:8000
+# Ou ouvrir dans le navigateur : http://localhost:8001
+```
+
+#### Application E-commerce Django (Rocket eCommerce)
+```bash
+# Page d'accueil e-commerce
+curl -H "Host: ecommerce.local" http://localhost/
+
+# Interface d'administration Django
+# Ouvrir dans le navigateur avec Host: ecommerce.local
+# http://localhost/admin/ (si superuser créé)
+
+# API Django (si endpoints disponibles)
+curl -H "Host: ecommerce.local" http://localhost/api/
 ```
 
 #### Nginx Status
@@ -218,7 +237,7 @@ docker-compose down --rmi all --volumes --remove-orphans
 - **URL du Repository** : https://github.com/USERNAME/devsecops-docker-project
 - **Ports utilisés** : 
   - 80 (Nginx + Applications proxifiées)
-  - 8000 (Application PHP directe)
+  - 8001 (Application PHP directe)
 - **Temps de démarrage estimé** : 2-3 minutes
 - **Prérequis** : Docker et Docker Compose installés
 
@@ -229,4 +248,74 @@ En cas de problème :
 2. Vérifier que les ports 80 et 8000 sont libres
 3. Consulter les logs avec `docker-compose logs`
 4. Redémarrer avec `docker-compose down && docker-compose up --build`
+
+
+
+---
+
+## Statut Actuel du Repository
+
+### Commandes Déjà Exécutées
+```bash
+# Repository initialisé
+git init
+
+# Configuration utilisateur locale
+git config user.email "etudiant@estiam.com"
+git config user.name "Etudiant ESTIAM"
+
+# Tous les fichiers ajoutés
+git add .
+
+# Premier commit effectué
+git commit -m "Initial commit: Projet DevSecOps Docker avec 4 applications..."
+```
+
+### Prochaines Étapes pour l'Étudiant
+
+1. **Créer un compte GitHub** (si pas déjà fait) : https://github.com
+
+2. **Créer un nouveau repository sur GitHub** :
+   - Nom suggéré : `devsecops-docker-project`
+   - Visibilité : Public (pour que le prof puisse y accéder)
+   - Ne pas initialiser avec README/gitignore (on a déjà nos fichiers)
+
+3. **Lier et pousser vers GitHub** :
+```bash
+# Remplacer VOTRE_USERNAME par votre nom d'utilisateur GitHub
+git remote add origin https://github.com/VOTRE_USERNAME/devsecops-docker-project.git
+
+# Renommer la branche en main (optionnel mais recommandé)
+git branch -M main
+
+# Pousser vers GitHub
+git push -u origin main
+```
+
+4. **Partager l'URL avec le professeur** :
+   - URL format : `https://github.com/VOTRE_USERNAME/devsecops-docker-project`
+
+### Vérifications Finales
+```bash
+# Vérifier le statut Git
+git status
+
+# Voir l'historique
+git log --oneline
+
+# Vérifier les remotes (après ajout de origin)
+git remote -v
+```
+
+### Exemple d'URL à Fournir au Professeur
+```
+https://github.com/votre-username/devsecops-docker-project
+```
+
+Le professeur pourra alors faire :
+```bash
+git clone https://github.com/votre-username/devsecops-docker-project.git
+cd devsecops-docker-project
+docker-compose up --build -d
+```
 

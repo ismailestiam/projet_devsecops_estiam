@@ -11,6 +11,7 @@ services:
       - static-app
       - python-app
       - nodejs-app
+      - ecommerce-app
     networks:
       - devsecops-network
     restart: unless-stopped
@@ -66,12 +67,31 @@ services:
       timeout: 10s
       retries: 3
 
+  # Application E-commerce Django (Rocket eCommerce)
+  ecommerce-app:
+    build: ./ecommerce-app
+    container_name: devsecops-ecommerce
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=django-secret-key-for-production
+      - STRIPE_PUBLISHABLE_KEY=pk_test_51234567890abcdef
+      - STRIPE_SECRET_KEY=sk_test_51234567890abcdef
+      - DATABASE_URL=sqlite:///db.sqlite3
+    networks:
+      - devsecops-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # Application PHP (Accès Direct - Pas de Proxy)
   php-app:
     build: ./php-app
     container_name: devsecops-php
     ports:
-      - "8000:8000"  # Accès direct pour les pentests
+      - "8001:8000"  # Changé le port pour éviter le conflit avec Django
     environment:
       - PHP_CLI_SERVER_WORKERS=4
     networks:
@@ -90,8 +110,10 @@ networks:
       config:
         - subnet: 172.20.0.0/16
 
-# Volumes pour la persistance des données (si nécessaire)
+# Volumes pour la persistance des données
 volumes:
   nginx-logs:
+    driver: local
+  ecommerce-db:
     driver: local
 

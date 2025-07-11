@@ -2,12 +2,13 @@
 
 ## Description
 
-Ce projet démontre une architecture DevSecOps complète avec 4 applications conteneurisées :
+Ce projet démontre une architecture DevSecOps complète avec 5 applications conteneurisées :
 
 1. **Application Statique** (HTML/CSS/JS) - Port 80 via Nginx
 2. **Application Python Flask** avec intégration Stripe - Port 5000 via Nginx  
 3. **Application Node.js Express** - Port 3000 via Nginx
-4. **Application PHP** - Port 8000 (Accès direct pour pentests)
+4. **Application E-commerce Django** (Rocket eCommerce) - Port 8000 via Nginx
+5. **Application PHP** - Port 8001 (Accès direct pour pentests)
 
 ## Architecture
 
@@ -39,7 +40,8 @@ docker-compose logs -f
 - **Application Statique** : http://localhost
 - **Application Python (Stripe)** : http://localhost (Host: python-app.local)
 - **Application Node.js** : http://localhost (Host: nodejs-app.local)  
-- **Application PHP (Direct)** : http://localhost:8000
+- **Application E-commerce Django** : http://localhost (Host: ecommerce.local)
+- **Application PHP (Direct)** : http://localhost:8001
 - **Nginx Status** : http://localhost (Host: status.local)
 
 ## Tests des APIs
@@ -72,13 +74,25 @@ curl -X POST http://localhost/api/users \
 ### PHP (Accès Direct)
 ```bash
 # Health check
-curl http://localhost:8000/api/health
+curl http://localhost:8001/api/health
 
 # Test de sécurité
-curl http://localhost:8000/api/security-test
+curl http://localhost:8001/api/security-test
 
 # Liste des produits
-curl http://localhost:8000/api/products
+curl http://localhost:8001/api/products
+```
+
+### Django E-commerce (Rocket eCommerce)
+```bash
+# Page d'accueil
+curl -H "Host: ecommerce.local" http://localhost/
+
+# API Django (si disponible)
+curl -H "Host: ecommerce.local" http://localhost/api/
+
+# Interface d'administration
+# http://localhost (Host: ecommerce.local) puis /admin/
 ```
 
 ## Commandes Docker Utiles
@@ -159,6 +173,11 @@ devsecops-project/
 │   ├── package.json
 │   ├── app.js
 │   └── public/
+├── ecommerce-app/             # Application Django E-commerce
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── manage.py
+│   └── [structure Django complète]
 ├── php-app/                   # Application PHP
 │   ├── Dockerfile
 │   ├── composer.json
