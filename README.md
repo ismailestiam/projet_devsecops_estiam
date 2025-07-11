@@ -32,7 +32,7 @@ Internet → Accès Direct → [App PHP pour Pentests]
 
 ```bash
 # Cloner le projet
-git clone https://github.com/USERNAME/devsecops-docker-project.git
+git clone https://github.com/ismailestiam/projet_devsecops_estiam.git
 cd devsecops-docker-project
 
 # Démarrer toute la stack (Infrastructure as Code)
