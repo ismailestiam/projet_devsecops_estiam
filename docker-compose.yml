@@ -9,8 +9,7 @@ services:
       - "80:80"
     depends_on:
       - static-app
-      - python-app
-      - nodejs-app
+      - stripe-app
       - ecommerce-app
     networks:
       - devsecops-network
@@ -21,7 +20,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Application Statique (HTML/CSS/JS)
+  # Application 1: Application Statique (HTML/CSS/JS) - EXIGENCE ÉNONCÉ
   static-app:
     build: ./static-app
     container_name: devsecops-static
@@ -34,40 +33,23 @@ services:
       timeout: 10s
       retries: 3
 
-  # Application Python Flask avec Stripe
-  python-app:
-    build: ./python-app
-    container_name: devsecops-python
+  # Application 2: Application Stripe (Flask) - EXIGENCE ÉNONCÉ
+  stripe-app:
+    build: ./stripe-app
+    container_name: devsecops-stripe
     environment:
-      - FLASK_ENV=production
       - STRIPE_PUBLISHABLE_KEY=pk_test_51234567890abcdef
       - STRIPE_SECRET_KEY=sk_test_51234567890abcdef
     networks:
       - devsecops-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/stripe/config"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # Application Node.js Express
-  nodejs-app:
-    build: ./nodejs-app
-    container_name: devsecops-nodejs
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-    networks:
-      - devsecops-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Application E-commerce Django (Rocket eCommerce)
+  # Application 3: Application E-commerce Django (Rocket eCommerce) - VIA NGINX
   ecommerce-app:
     build: ./ecommerce-app
     container_name: devsecops-ecommerce
@@ -86,12 +68,12 @@ services:
       timeout: 10s
       retries: 3
 
-  # Application PHP (Accès Direct - Pas de Proxy)
+  # Application 4: Application PHP (ACCÈS DIRECT pour PENTESTS) - EXIGENCE ÉNONCÉ
   php-app:
     build: ./php-app
     container_name: devsecops-php
     ports:
-      - "8001:8000"  # Changé le port pour éviter le conflit avec Django
+      - "8001:8000"  # Accès direct pour les pentests (pas de reverse proxy)
     environment:
       - PHP_CLI_SERVER_WORKERS=4
     networks:

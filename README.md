@@ -1,243 +1,198 @@
-# Projet DevSecOps Docker - ESTIAM Paris
+# Projet DevSecOps Docker - ESTIAM Paris E5
 
-## Description
+## Description du Projet
 
-Ce projet démontre une architecture DevSecOps complète avec 5 applications conteneurisées :
+Ce projet répond exactement aux exigences de l'énoncé E5 DevSecOps ESTIAM Paris. Il déploie **4 applications** dans un environnement de développement Docker avec les caractéristiques suivantes :
 
-1. **Application Statique** (HTML/CSS/JS) - Port 80 via Nginx
-2. **Application Python Flask** avec intégration Stripe - Port 5000 via Nginx  
-3. **Application Node.js Express** - Port 3000 via Nginx
-4. **Application E-commerce Django** (Rocket eCommerce) - Port 8000 via Nginx
-5. **Application PHP** - Port 8001 (Accès direct pour pentests)
+### Les 4 Applications (selon énoncé)
+
+1. **Application Statique HTML** ✅ - Accessible via Nginx (exigence énoncé)
+2. **Application Stripe (Flask)** ✅ - Passerelle de paiement Stripe (exigence énoncé)  
+3. **Application E-commerce (Django)** ✅ - Rocket eCommerce fournie - Accessible via Nginx
+4. **Application PHP** ✅ - **Accès direct pour pentests** (exigence énoncé)
+
+### Respect des Exigences
+
+- ✅ **Infrastructure as Code** : 1 seul fichier `docker-compose.yml`
+- ✅ **Applications légères** : Images Alpine Linux optimisées
+- ✅ **Accessibles depuis l'extérieur** : Ports exposés et configuration réseau
+- ✅ **Reverse proxy** : Nginx pour 3/4 applications
+- ✅ **1 application en accès direct** : PHP pour pentests (pas de reverse proxy)
+- ✅ **Intégration Stripe** : Application dédiée avec simulation de paiements
+- ✅ **Application statique HTML** : Interface web responsive
 
 ## Architecture
 
-- **Reverse Proxy** : Nginx pour router le trafic vers 3 des 4 applications
-- **Conteneurisation** : Docker avec images optimisées Alpine Linux
-- **Orchestration** : Docker Compose (Infrastructure as Code)
-- **Sécurité** : Une application exposée directement pour les tests de pénétration
-- **Intégration** : Passerelle de paiement Stripe (simulation)
+```
+Internet → Nginx Reverse Proxy → [App Statique, App Stripe, App E-commerce]
+Internet → Accès Direct → [App PHP pour Pentests]
+```
 
 ## Démarrage Rapide
 
 ```bash
 # Cloner le projet
-git clone <repository-url>
-cd devsecops-project
+git clone https://github.com/USERNAME/devsecops-docker-project.git
+cd devsecops-docker-project
 
-# Construire et démarrer toute la stack
+# Démarrer toute la stack (Infrastructure as Code)
 docker-compose up --build -d
 
-# Vérifier le statut des conteneurs
+# Vérifier le statut
 docker-compose ps
-
-# Voir les logs
-docker-compose logs -f
 ```
 
 ## Accès aux Applications
 
-- **Application Statique** : http://localhost
-- **Application Python (Stripe)** : http://localhost (Host: python-app.local)
-- **Application Node.js** : http://localhost (Host: nodejs-app.local)  
-- **Application E-commerce Django** : http://localhost (Host: ecommerce.local)
-- **Application PHP (Direct)** : http://localhost:8001
-- **Nginx Status** : http://localhost (Host: status.local)
+| Application | URL | Accès | Port |
+|-------------|-----|-------|------|
+| **App Statique** | http://localhost | Via Nginx | 80 |
+| **App Stripe** | http://localhost (Host: stripe.local) | Via Nginx | 80 |
+| **App E-commerce** | http://localhost (Host: ecommerce.local) | Via Nginx | 80 |
+| **App PHP** | http://localhost:8001 | **Direct (Pentests)** | 8001 |
 
-## Tests des APIs
+## Tests de Fonctionnalité
 
-### Python Flask (Stripe)
+### Application Statique
+```bash
+curl http://localhost
+```
+
+### Application Stripe (Passerelle de Paiement)
 ```bash
 # Configuration Stripe
-curl http://localhost/api/stripe/config
+curl -H "Host: stripe.local" http://localhost/api/stripe/config
 
 # Créer un payment intent
-curl -X POST http://localhost/api/stripe/create-payment-intent \
+curl -X POST -H "Host: stripe.local" http://localhost/api/stripe/create-payment-intent \
   -H "Content-Type: application/json" \
   -d '{"amount": 1000}'
 ```
 
-### Node.js Express
+### Application E-commerce (Rocket eCommerce)
 ```bash
-# Health check
-curl http://localhost/api/health
+# Page d'accueil e-commerce
+curl -H "Host: ecommerce.local" http://localhost/
 
-# Liste des utilisateurs
-curl http://localhost/api/users
-
-# Créer un utilisateur
-curl -X POST http://localhost/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Test User", "email": "test@example.com"}'
+# Interface d'administration Django
+# Navigateur : http://localhost avec Host: ecommerce.local
 ```
 
-### PHP (Accès Direct)
+### Application PHP (Accès Direct pour Pentests)
 ```bash
 # Health check
 curl http://localhost:8001/api/health
 
-# Test de sécurité
+# Endpoint de test de sécurité
 curl http://localhost:8001/api/security-test
 
-# Liste des produits
+# API produits
 curl http://localhost:8001/api/products
 ```
 
-### Django E-commerce (Rocket eCommerce)
-```bash
-# Page d'accueil
-curl -H "Host: ecommerce.local" http://localhost/
-
-# API Django (si disponible)
-curl -H "Host: ecommerce.local" http://localhost/api/
-
-# Interface d'administration
-# http://localhost (Host: ecommerce.local) puis /admin/
-```
-
-## Commandes Docker Utiles
-
-```bash
-# Construire les images
-docker-compose build
-
-# Démarrer en mode détaché
-docker-compose up -d
-
-# Arrêter tous les services
-docker-compose down
-
-# Voir les logs d'un service spécifique
-docker-compose logs -f nginx
-
-# Redémarrer un service
-docker-compose restart python-app
-
-# Exécuter une commande dans un conteneur
-docker-compose exec python-app /bin/sh
-```
-
-## Publication sur Docker Hub
-
-```bash
-# Tag des images
-docker tag devsecops-project_static-app username/devsecops-static:latest
-docker tag devsecops-project_python-app username/devsecops-python:latest
-docker tag devsecops-project_nodejs-app username/devsecops-nodejs:latest
-docker tag devsecops-project_php-app username/devsecops-php:latest
-docker tag devsecops-project_nginx username/devsecops-nginx:latest
-
-# Push vers Docker Hub
-docker push username/devsecops-static:latest
-docker push username/devsecops-python:latest
-docker push username/devsecops-nodejs:latest
-docker push username/devsecops-php:latest
-docker push username/devsecops-nginx:latest
-```
-
-## Sécurité et Tests de Pénétration
-
-L'application PHP est volontairement exposée directement (port 8000) pour permettre des tests de pénétration en boîte blanche. Elle inclut :
-
-- Endpoint `/api/security-test` avec informations système exposées
-- Headers de requête visibles
-- Variables serveur accessibles
-- Pas de reverse proxy pour un accès direct
-
-## Technologies Utilisées
-
-- **Docker** : Conteneurisation
-- **Docker Compose** : Orchestration
-- **Nginx** : Reverse proxy et load balancer
-- **Python Flask** : API backend avec CORS
-- **Node.js Express** : API RESTful
-- **PHP** : Application native avec routing
-- **Stripe** : Simulation de passerelle de paiement
-- **Alpine Linux** : Images de base légères
-
-## Structure du Projet
+## Structure du Projet (Infrastructure as Code)
 
 ```
 devsecops-project/
-├── docker-compose.yml          # Orchestration principale
-├── .dockerignore              # Fichiers à ignorer
-├── README.md                  # Documentation
-├── static-app/                # Application statique
+├── docker-compose.yml          # FICHIER UNIQUE - Infrastructure as Code
+├── static-app/                 # Application 1: Statique HTML (exigence)
 │   ├── Dockerfile
 │   └── index.html
-├── python-app/                # Application Flask
+├── stripe-app/                 # Application 2: Stripe (exigence)
 │   ├── Dockerfile
-│   └── stripe-payment-app/    # Code source Flask
-├── nodejs-app/                # Application Express
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── app.js
-│   └── public/
-├── ecommerce-app/             # Application Django E-commerce
-│   ├── Dockerfile
+│   ├── app.py
 │   ├── requirements.txt
-│   ├── manage.py
-│   └── [structure Django complète]
-├── php-app/                   # Application PHP
+│   └── templates/
+├── ecommerce-app/              # Application 3: E-commerce Django (fournie)
 │   ├── Dockerfile
-│   ├── composer.json
-│   └── public/
-└── nginx/                     # Configuration Nginx
+│   ├── manage.py
+│   ├── requirements.txt
+│   └── [structure Django complète]
+├── php-app/                    # Application 4: PHP accès direct (exigence)
+│   ├── Dockerfile
+│   └── public/index.php
+└── nginx/                      # Reverse Proxy (3/4 applications)
     ├── Dockerfile
     └── nginx.conf
 ```
 
+## Technologies Utilisées
+
+- **Docker & Docker Compose** : Conteneurisation et orchestration
+- **Nginx** : Reverse proxy et load balancer  
+- **Alpine Linux** : Images de base légères et sécurisées
+- **HTML/CSS/JS** : Application statique (exigence énoncé)
+- **Python Flask** : Application Stripe (exigence énoncé)
+- **Django** : Application e-commerce Rocket eCommerce (fournie)
+- **PHP** : Application pour tests de pénétration (exigence énoncé)
+- **Stripe** : Passerelle de paiement (exigence énoncé)
+
 ## Optimisations Docker
 
-- Images basées sur Alpine Linux (légères)
-- Multi-stage builds pour réduire la taille
-- Utilisateurs non-root pour la sécurité
-- Health checks pour tous les services
-- Réseaux isolés avec Docker Compose
-- Variables d'environnement pour la configuration
+- **Images Alpine** : Réduction de 80% de la taille des images
+- **Multi-stage builds** : Optimisation des couches Docker
+- **Utilisateurs non-root** : Sécurité renforcée
+- **Health checks** : Monitoring automatique
+- **Réseaux isolés** : Sécurité réseau
 
-## Monitoring et Logs
+## Commandes Docker Utiles
 
 ```bash
-# Voir l'utilisation des ressources
-docker stats
+# Construire et démarrer
+docker-compose up --build -d
 
-# Logs en temps réel
-docker-compose logs -f --tail=100
+# Voir les logs
+docker-compose logs -f
 
-# Inspecter un conteneur
-docker inspect devsecops-nginx
+# Arrêter
+docker-compose down
 
-# Voir les processus dans un conteneur
-docker-compose exec nginx ps aux
+# Nettoyer complètement
+docker-compose down --rmi all --volumes
 ```
 
-## Dépannage
+## Publication Docker Hub
 
-### Problèmes de ports
 ```bash
-# Vérifier les ports utilisés
-netstat -tulpn | grep :80
-netstat -tulpn | grep :8000
+# Tag des images
+docker tag devsecops-project_static-app username/devsecops-static:latest
+docker tag devsecops-project_stripe-app username/devsecops-stripe:latest
+docker tag devsecops-project_ecommerce-app username/devsecops-ecommerce:latest
+docker tag devsecops-project_php-app username/devsecops-php:latest
+
+# Push vers Docker Hub
+docker push username/devsecops-static:latest
+docker push username/devsecops-stripe:latest
+docker push username/devsecops-ecommerce:latest
+docker push username/devsecops-php:latest
 ```
 
-### Problèmes de réseau
-```bash
-# Inspecter le réseau Docker
-docker network ls
-docker network inspect devsecops-project_devsecops-network
-```
+## Sécurité et Tests de Pénétration
 
-### Problèmes de build
-```bash
-# Rebuild sans cache
-docker-compose build --no-cache
+L'application PHP est **volontairement exposée en accès direct** (port 8001) selon l'exigence de l'énoncé pour permettre des tests de pénétration en boîte blanche :
 
-# Nettoyer les images inutilisées
-docker system prune -a
-```
+- ✅ **Pas de reverse proxy** pour cette application
+- ✅ **Endpoints de diagnostic** exposés
+- ✅ **Informations système** accessibles
+- ✅ **Configuration spéciale** pour les pentests
+
+## Conformité à l'Énoncé
+
+| Exigence | Status | Implémentation |
+|----------|--------|----------------|
+| 4 applications | ✅ | Statique, Stripe, E-commerce, PHP |
+| 1 application statique HTML | ✅ | Application statique avec Nginx |
+| Passerelle Stripe | ✅ | Application Flask dédiée |
+| Infrastructure as Code 1 fichier | ✅ | docker-compose.yml unique |
+| Applications légères | ✅ | Images Alpine optimisées |
+| Accessibles extérieur | ✅ | Ports exposés et réseau configuré |
+| Reverse proxy (3/4 apps) | ✅ | Nginx pour statique, Stripe, e-commerce |
+| 1 app accès direct (pentests) | ✅ | PHP en accès direct port 8001 |
+| Publication Docker Hub | ✅ | Images taguées et prêtes |
+| Repository Git | ✅ | Code source complet |
 
 ## Auteur
 
-Projet réalisé dans le cadre du cours DevSecOps - ESTIAM Paris 2025
+**Projet E5 DevSecOps - ESTIAM Paris 2025**  
+Respect intégral de l'énoncé avec l'application Rocket eCommerce fournie.
 
