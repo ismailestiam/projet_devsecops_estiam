@@ -36,6 +36,8 @@ git clone https://github.com/ismailestiam/projet_devsecops_estiam.git
 cd devsecops-docker-project
 
 # Démarrer toute la stack (Infrastructure as Code)
+docker compose up --build -d
+# si ne marche pas (old version docker)
 docker-compose up --build -d
 
 # Vérifier le statut
