@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # Nginx Reverse Proxy
+  nginx:
+    build: ./nginx
+    container_name: devsecops-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - static-app
+      - python-app
+      - nodejs-app
+    networks:
+      - devsecops-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/nginx_status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Application Statique (HTML/CSS/JS)
+  static-app:
+    build: ./static-app
+    container_name: devsecops-static
+    networks:
+      - devsecops-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Application Python Flask avec Stripe
+  python-app:
+    build: ./python-app
+    container_name: devsecops-python
+    environment:
+      - FLASK_ENV=production
+      - STRIPE_PUBLISHABLE_KEY=pk_test_51234567890abcdef
+      - STRIPE_SECRET_KEY=sk_test_51234567890abcdef
+    networks:
+      - devsecops-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/stripe/config"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Application Node.js Express
+  nodejs-app:
+    build: ./nodejs-app
+    container_name: devsecops-nodejs
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - devsecops-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Application PHP (Accès Direct - Pas de Proxy)
+  php-app:
+    build: ./php-app
+    container_name: devsecops-php
+    ports:
+      - "8000:8000"  # Accès direct pour les pentests
+    environment:
+      - PHP_CLI_SERVER_WORKERS=4
+    networks:
+      - devsecops-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  devsecops-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Volumes pour la persistance des données (si nécessaire)
+volumes:
+  nginx-logs:
+    driver: local
+
